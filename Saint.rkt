@@ -9,11 +9,11 @@
 (define elf (lambda (function)
               ; Test the trivial case of integral dv = v             
               (if (symbol? function)
-                  (if (dv? (symbol->string function))
-                      (string-ref (symbol->string function) 1)
+                  (if (dv? function)
+                      (string-ref function 1)
                       #f)
-                  (if (dv? (symbol->string (last function)))
-                      (let ([variable (string-ref (symbol->string (last function)) 1)])
+                  (if (dv? (last function))
+                      (let ([variable (string-ref (last function) 1)])
                         ; integral Cdv = Cv
                         (if (= 2 (length function))
                             (cond
@@ -52,6 +52,23 @@
                                   (append (list (uSubstitution u fx head))
                                           (uSubstitution u fx (cdr function)))
                                   (append (list head) (uSubstitution u fx (cdr function)))))))))
+
+; The next part of the uSubstitution
+; If uSubstitution u=sin x results in (u cos dx), the du part has to equal cosx dx,
+; and applying duSubstitute should give u du.
+; If du is not present, the function returns #f and thus the uSubstitution did not work.
+; (duSubstitute "du" '( (cos x) "dx") (uSubstitution #\u '(sin x) '( (sin x) (cos x) "dx")))
+;  --> '(#\u "du")
+; (duSubstitute "du" '( (cos x) "dx") (uSubstitution #\u '(sin x) '( (expt (sin x) 2) (cos x) "dx")))
+;  ---> '((expt #\u 2) "du")
+;
+(define duSubstitute (lambda (du dx function)
+                       (if (null? function)
+                           #f
+                           (if (equal? dx function)
+                               (list du)
+                               (append (list (car function))
+                                       (duSubstitute du dx (cdr function)))))))
 
                         
                         
