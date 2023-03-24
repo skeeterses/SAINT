@@ -20,7 +20,7 @@
                                  [(and (char? mainFunction)
                                      (char-upper-case? mainFunction)) (list mainFunction variable)]   ; Rule a) Cdv -> Cv.
                                  [(equal? mainFunction variable)
-                                  (list '/ (list 'expt variable '2) '2)]   ; Rule u-i) vdv -> 1/2 * v^2
+                                  (list '/ (list 'expt variable '2) '2)]   ; Rule u-i) vdv -> 1/2 * v^2;
                                  [(list? mainFunction)
                                   (cond
                                     [(and (equal? 'exp (car mainFunction))
@@ -89,34 +89,26 @@
 ; The first part of uSubstitution is complete.
 ; uSubstitution of u=sinx for ( sinx cosx dx) results in (u cosx dx)
 ; The next step is to replace (cosx dx) with du.
-(define uSubstitution (lambda (u fx function)
+;
+;(uSubstitution #\u '(sin x) "du" '(cos x) '( (sin x) (cos x)))
+; ---> '(#\u "du")
+;> (uSubstitution #\u '(sin x) "du" '(cos x) '( (expt (sin x) 2) (cos x)))
+;--->'((expt #\u 2) "du")
+;(uSubstitution #\u '(cos x) "du" '(- (sin x)) '( (/ (- (sin x)) (cos x))))
+; ---> '((/ "du" #\u))
+(define uSubstitution (lambda (u fx du dx function)
                         (if (null? function)
                             '()
                           (let ([head (car function)])
-                          (if (equal? fx head)
-                              (append (list u) (uSubstitution u fx (cdr function)))
-                              (if (list? head)
-                                  (append (list (uSubstitution u fx head))
-                                          (uSubstitution u fx (cdr function)))
-                                  (append (list head) (uSubstitution u fx (cdr function)))))))))
-
-; The next part of the uSubstitution
-; If uSubstitution u=sin x results in (u cos dx), the du part has to equal cosx dx,
-; and applying duSubstitute should give u du.
-; If du is not present, the function returns #f and thus the uSubstitution did not work.
-; (duSubstitute "du" '( (cos x) "dx") (uSubstitution #\u '(sin x) '( (sin x) (cos x) "dx")))
-;  --> '(#\u "du")
-; (duSubstitute "du" '( (cos x) "dx") (uSubstitution #\u '(sin x) '( (expt (sin x) 2) (cos x) "dx")))
-;  ---> '((expt #\u 2) "du")
-;
-(define duSubstitute (lambda (du dx function)
-                       (if (null? function)
-                           #f
-                           (if (equal? dx function)
-                               (list du)
-                               (append (list (car function))
-                                       (duSubstitute du dx (cdr function)))))))
-
+                            (cond [(equal? fx head)
+                                   (append (list u) (uSubstitution u fx du dx (cdr function)))]
+                                  [(equal? dx head)
+                                   (append (list du) (uSubstitution u fx du dx (cdr function)))]
+                                  [(list? head)
+                                   (append (list (uSubstitution u fx du dx head))
+                                           (uSubstitution u fx du dx (cdr function)))]                                  
+                                  [else (append (list head) (uSubstitution u fx du dx (cdr function)))])))))
+                          
                         
                         
 
