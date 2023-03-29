@@ -23,6 +23,7 @@
                           (cond
                             ; Trivial case of integral dv = v
                             [(= funLength 1) (string-ref dv 1)]
+
                             [(= funLength 2)
                              (let ([mainFunction (car function)])
                                (cond [(number? mainFunction) (list mainFunction variable)]
@@ -80,8 +81,95 @@
                                         [(and (equal? (list 'expt (list 'sec variable) 2) mainFunction)
                                               (equal? variable (cadadr mainFunction)))
                                          (list 'tan variable)] ; Case r
-                                        [else #f])]
+                                        [(and (equal? (list 'expt (list 'csc variable) 2) mainFunction)
+                                              (equal? variable (cadadr mainFunction)))
+                                         (list '- 'cot variable)]  ; Case s
+                                        [(equal? (list 'expt variable -1) mainFunction)
+                                         (list 'log variable)]  ; Case t -- (expt x -1) --> log x
+                                        [(and (equal? 'expt (car mainFunction))
+                                              (equal? variable (cadr mainFunction))
+                                              (number? (caddr mainFunction)))
+                                         (list '/ (list 'expt variable (+ (caddr mainFunction) 1))
+                                               (+ (caddr mainFunction) 1))] ; Case u
+                                        [else #f])]                                     
                                  [else #f]))]
+                             [(= funLength 3)
+                              (let ([function1 (car function)] [function2 (cadr function)])
+                                (cond
+                                  [(and (equal? 'sec (car function1))      ; Case v
+                                        (equal? variable (cadr function1))
+                                        (equal? 'tan (car function2))
+                                        (equal? variable (cadr function2)))
+                                   (list 'sec variable)]
+                                  [(and (equal? 'csc (car function1))
+                                        (equal? variable (cadr function1))   ;Case w
+                                        (equal? 'cot (car function2))
+                                        (equal? variable (cadr function2)))
+                                   (list '- 'csc variable)]
+                                  [(and (equal? 'sin (car function1))   ; Case x
+                                        (equal? 'cos (car function2))
+                                        (equal? variable (last function1))
+                                        (equal? variable (last function2)))
+                                    (cond
+                                      [(and (equal? (length function1) 3) (equal? (length function2) 3)                                            
+                                            (not (equal? (cadr function1) (cadr function2))))
+                                       (let ([m (cadr function1)] [n (cadr function2)])
+                                         (list '- (list '/ (list '- 'cos (- m n) variable) (* 2 (- m n)))
+                                               (list '/ (list 'cos (+ m n) variable) (* 2 (+ m n)))))]
+                                      [(and (equal? (length function1) 2) (equal? (length function2) 3)
+                                            (not (equal? 1 (cadr function2))))
+                                       (let ([m 1] [n (cadr function2)])
+                                         (list '- (list '/ (list '- 'cos (- m n) variable) (* 2 (- m n)))
+                                               (list '/ (list 'cos (+ m n) variable) (* 2 (+ m n)))))]
+                                      [(and (equal? (length function1) 3) (equal? (length function2) 2)
+                                            (not (equal? 1 (cadr function1))))
+                                       (let ([m (cadr function1)] [n 1])
+                                         (list '- (list '/ (list '- 'cos (- m n) variable) (* 2 (- m n)))
+                                               (list '/ (list 'cos (+ m n) variable) (* 2 (+ m n)))))]
+                                      [else #f])]
+                                  [(and (equal? 'sin (car function1))   ; Case y
+                                        (equal? 'sin (car function2))
+                                        (equal? variable (last function1))
+                                        (equal? variable (last function2)))
+                                        (cond
+                                          [(and (equal? (length function1) 3) (equal? (length function2) 3)                                            
+                                                (not (equal? (cadr function1) (cadr function2))))
+                                           (let ([m (cadr function1)] [n (cadr function2)])
+                                             (list '- (list '/ (list 'sin (- m n) variable) (* 2 (- m n)))
+                                                   (list '/ (list 'sin (+ m n) variable) (* 2 (+ m n)))))]
+                                          [(and (equal? (length function1) 2) (equal? (length function2) 3)
+                                                (not (equal? 1 (cadr function2))))
+                                           (let ([m 1] [n (cadr function2)])
+                                             (list '- (list '/ (list 'sin (- m n) variable) (* 2 (- m n)))
+                                                   (list '/ (list 'sin (+ m n) variable) (* 2 (+ m n)))))]
+                                          [(and (equal? (length function1) 3) (equal? (length function2) 2)
+                                                (not (equal? 1 (cadr function1))))
+                                           (let ([m (cadr function1)] [n 1])
+                                             (list '- (list '/ (list 'sin (- m n) variable) (* 2 (- m n)))
+                                                   (list '/ (list 'sin (+ m n) variable) (* 2 (+ m n)))))]
+                                          [else #f])]
+                                  [(and (equal? 'cos (car function1))  ; Case z
+                                        (equal? 'cos (car function2))
+                                        (equal? variable (last function1))
+                                        (equal? variable (last function2)))
+                                   (cond
+                                     [(and (equal? (length function1) 3) (equal? (length function2) 3)                                            
+                                           (not (equal? (cadr function1) (cadr function2))))
+                                      (let ([m (cadr function1)] [n (cadr function2)])
+                                        (list '+ (list '/ (list 'sin (- m n) variable) (* 2 (- m n)))
+                                              (list '/ (list 'sin (+ m n) variable) (* 2 (+ m n)))))]
+                                     [(and (equal? (length function1) 2) (equal? (length function2) 3)
+                                           (not (equal? 1 (cadr function2))))
+                                      (let ([m 1] [n (cadr function2)])
+                                        (list '+ (list '/ (list 'sin (- m n) variable) (* 2 (- m n)))
+                                              (list '/ (list 'sin (+ m n) variable) (* 2 (+ m n)))))]
+                                     [(and (equal? (length function1) 3) (equal? (length function2) 2)
+                                           (not (equal? 1 (cadr function1))))
+                                      (let ([m (cadr function1)] [n 1])
+                                        (list '+ (list '/ (list 'sin (- m n) variable) (* 2 (- m n)))
+                                              (list '/ (list 'sin (+ m n) variable) (* 2 (+ m n)))))]
+                                     [else #f])]                                   
+                                  [else #f]))]
                         [else #f]))
                     #f))))) ; The function doesn't have "dx" at the end.
                                  
