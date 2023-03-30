@@ -94,8 +94,15 @@
                                         [else #f])]                                     
                                  [else #f]))]
                              [(= funLength 3)
-                              (let ([function1 (car function)] [function2 (cadr function)])
-                                (cond
+                              (if (and (list? (car function)) (list? (cadr function)))
+                                  (xyzFunctions (car function) (cadr function) variable)
+                                  #f)]
+                             [else #f]))
+                        #f)))))
+
+
+(define xyzFunctions (lambda (function1 function2 variable)
+                       (cond
                                   [(and (equal? 'sec (car function1))      ; Case v
                                         (equal? variable (cadr function1))
                                         (equal? 'tan (car function2))
@@ -168,25 +175,28 @@
                                       (let ([m (cadr function1)] [n 1])
                                         (list '+ (list '/ (list 'sin (- m n) variable) (* 2 (- m n)))
                                               (list '/ (list 'sin (+ m n) variable) (* 2 (+ m n)))))]
-                                     [else #f])]                                   
-                                  [else #f]))]
-                        [else #f]))
-                    #f))))) ; The function doesn't have "dx" at the end.
-                                 
-                                 
-                                                  
-;                  (if (dv? (last function))
-;                      (let ([variable (string-ref (last function) 1)])
-;                        ; integral Cdv = Cv
-;                        (if (= 2 (length function))
-;                            (cond
-;                              [(number? (car function)) (list (car function) variable)]
-;                              [(and (char? (car function))
-;                                    (char-upper-case? (car function))) (list (car function) variable)])
-;                            '()))
-;                      #f))))
-                        
-                        
+                                     [else #f])]
+                                  [else #f])))
+
+; Algorithmic like transformations below.
+; The decomposition transform will be a little tricky.  In the LISP like languages, (- f(x)g(x)) usually means
+; f - g, but in this program, f(x)g(x) means f(x) * g(x).  To get around that, I'm going to use '+ for all additions
+; and subtractions and have subtraction represented as the addition of negative numbers; (+ (-A) B C (-D)).
+(define algTransform (lambda (function)
+                       (cond
+                         [(number? (car function))                              
+                          (list (car function) (integrate (cdr function)))] ; Case a: Factor constant
+                         [(equal? '- (car function))
+                          (list '- (integrate (cdr function)))]  ; Case b: Negate
+                         [else #f])))
+
+(define integrate (lambda (function)
+                    (let ([result1 (elf function)])
+                      (if result1
+                          result1
+                          (algTransform function)))))
+                          
+                                                         
 
 ; Check the format to see if a string is 2 letters and 
 ; d folowed by lowercase letter.
