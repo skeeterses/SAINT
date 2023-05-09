@@ -6,8 +6,9 @@
 	 ((guard (list a b)
 		 (and (constant? a) (dx? b)))
 	  (list a (char b 1)))
+
 	 ((guard (list (list 'exp a) b)
-		 (dx? b))
+		 (and (variable? a) (dx? b)))
 		 (list 'exp a))))
 ;  (match func	 	 
 ;	 ((list 'exp a) (list 'exp a))
@@ -29,3 +30,10 @@
 	   elem
 	   nil))
 	 (t nil)))
+
+(defun variable? (elem)
+  (cond ((characterp elem)
+	 (if (lower-case-p elem)
+	   elem
+	   nil))
+	(t nil)))
