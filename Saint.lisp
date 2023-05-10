@@ -6,10 +6,23 @@
 	 ((guard (list a b)
 		 (and (constant? a) (dx? b)))
 	  (list a (char b 1)))
-
 	 ((guard (list (list 'exp a) b)
 		 (and (variable? a) (dx? b)))
-		 (list 'exp a))))
+		 (list 'exp a))
+	 ((guard (list (list 'sin a) b)
+		 (and (variable? a) (dx? b)))
+	  (list '- 'cos a))
+	 ((guard (list (list 'expt a b) c)
+		 (and (constant? a) (variable? b) (dx? c)))
+	  (list (list 'expt a b) '/ (list 'log b)))
+	 ((guard (list (list 'log a b) c)
+		 (and (constant? b) (variable? a) (dx? c)))
+	  (list (list a (list 'log a b)) '- (list a '/ (list 'log b))))
+	 ((guard (list (list 'cos a) b)
+		 (and (variable? a) (dx? b)))
+	  (list 'sin a))))
+
+
 ;  (match func	 	 
 ;	 ((list 'exp a) (list 'exp a))
 ;	 ((list 'sin a) (list '- 'cos a))
