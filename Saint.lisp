@@ -20,7 +20,19 @@
 	  (list (list a (list 'log a b)) '- (list a '/ (list 'log b))))
 	 ((guard (list (list 'cos a) b)
 		 (and (variable? a) (dx? b)))
-	  (list 'sin a))))
+	  (list 'sin a))
+	 ((guard (list (list 'tan a) b)
+		 (and (variable? a) (dx? b)))
+	  (list 'log (list 'sec a)))
+	 ((guard (list (list 'cot a) b)
+		 (and (variable? a) (dx? b)))
+	  (list 'log (list 'sin a)))
+	 ((guard (list (list 'sec a) b)
+		 (and (variable? a) (dx? b)))
+	  (list 'log (list (list 'sec a) '+ (list 'tan a))))
+	 ((guard (list (list 'csc a) b)
+		 (and (variable? a) (dx? b)))
+	  (list 'log (list (list 'csc a) '- (list 'cot a))))))
 
 
 ;  (match func	 	 
