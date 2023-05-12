@@ -65,7 +65,23 @@
 	  (list (list 'expt a (+ b 1)) '/ (+ b 1)))
 	 ((guard (list (list 'expt a b) c)
 		 (and (variable? a) (constant? b) (dx? c)))
-	  (list (list 'expt a (list b '+ 1)) '/ (list b '+ 1)))))
+	  (list (list 'expt a (list b '+ 1)) '/ (list b '+ 1)))
+	 ((guard (list (list 'sec a) (list 'tan b) c)
+		 (and (variable? a) (variable? b) (char= a b) (dx? c)))
+	  (list 'sec a))
+	 ((guard (list (list 'csc a) (list 'cot b) c)
+		 (and (variable? a) (variable? b) (char= a b) (dx? c)))
+	  (list '- 'csc a))
+	 ((guard (list (list 'sin m a) (list 'cos n b) c)
+		 (and (numberp m) (numberp n) (/= m n) (variable? a) (variable? b) (char= a b) (dx? c)))
+	  (list '- (list (list 'cos (- m n) a) '/ (* 2 (- m n))) '-
+		(list (list 'cos (+ m n) a) '/ (* 2 (+ m n)))))
+	 ((guard (list (list 'sin m a) (list 'sin n b) c)
+		 (and (numberp m) (numberp n) (/= m n) (variable? a) (variable? b) (char= a b) (dx? c)))
+	  (list '()))
+	 ((guard (list (list 'cos m a) (list 'cos n b) c)
+		 (and (numberp m) (numberp n) (/= m n) (variable? a) (variable? b) (char= a b) (dx? c)))
+	  (list '()))))
 
 
 ;  (match func	 	 
