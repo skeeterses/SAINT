@@ -60,6 +60,12 @@
 	 ((guard (list b '/ a)
 		 (and (variable? a) (dx? b)))
 	  (list 'log a))
+	 ((guard (list (list 'expt a -1) b)
+		 (and (variable? a) (dx? b)))
+	  (list 'log a))
+	 ((guard (list a b)
+		 (and (variable? a) (dx? b)))
+	  (list (list 'expt a 2) '/ 2))
 	 ((guard (list (list 'expt a b) c)
 		 (and (variable? a) (numberp b) (dx? c)))
 	  (list (list 'expt a (+ b 1)) '/ (+ b 1)))
@@ -85,12 +91,8 @@
 	  (list (list (list 'sin (- m n) a) '/ (* 2 (- m n))) '+
 		(list (list 'sin (+ m n) a) '/ (* 2 (+ m n)))))))
 
-
-;  (match func	 	 
-;	 ((list 'exp a) (list 'exp a))
-;	 ((list 'sin a) (list '- 'cos a))
-;	 ((list 'cos a) (list 'sin a))
-	
+(defun algTran (func)
+  '())
 	  
 (defun dx? (elem)
   (if (stringp elem)
