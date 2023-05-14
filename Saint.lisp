@@ -78,10 +78,12 @@
 		(list (list 'cos (+ m n) a) '/ (* 2 (+ m n)))))
 	 ((guard (list (list 'sin m a) (list 'sin n b) c)
 		 (and (numberp m) (numberp n) (/= m n) (variable? a) (variable? b) (char= a b) (dx? c)))
-	  (list '()))
+	  (list (list (list 'sin (- m n) a) '/ (* 2 (- m n))) '- 
+		(list (list 'sin (+ m n) a) '/ (* 2 (+ m n)))))
 	 ((guard (list (list 'cos m a) (list 'cos n b) c)
 		 (and (numberp m) (numberp n) (/= m n) (variable? a) (variable? b) (char= a b) (dx? c)))
-	  (list '()))))
+	  (list (list (list 'sin (- m n) a) '/ (* 2 (- m n))) '+
+		(list (list 'sin (+ m n) a) '/ (* 2 (+ m n)))))))
 
 
 ;  (match func	 	 
