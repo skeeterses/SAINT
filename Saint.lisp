@@ -3,6 +3,8 @@
 
 (defun elf (func)
   (match func
+	 ((guard (list a) (dx? a))
+	  (list (char a 1)))
 	 ((guard (list a b)
 		 (and (constant? a) (dx? b)))
 	  (list a (char b 1)))
@@ -92,8 +94,19 @@
 		(list (list 'sin (+ m n) a) '/ (* 2 (+ m n)))))))
 
 (defun algTran (func)
-  '())
+  (cond
+    ((and (constant? (car func)) (dx? (car (last func))))
+     (list (car func) (integral (cdr func))))
+    ((eq '- (car func))
+     (list '- (integral (cdr func))))
+    (t nil)))
 	  
+	 
+(defun integral (func)
+  (cond ((elf func) (elf func))
+	((algTran func) (algTran func))
+	(t nil)))
+
 (defun dx? (elem)
   (if (stringp elem)
     (and (= (length elem) 2)
@@ -115,3 +128,4 @@
 	   elem
 	   nil))
 	(t nil)))
+
