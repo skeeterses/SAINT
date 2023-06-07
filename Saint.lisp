@@ -100,7 +100,7 @@
     ((eq '- (car func))
      (list '- (integral (cdr func))))
     ((and (sigma? (car func)) (dx? (car (last func))))
-     '())
+     (mapcar #'integral (insertDx (combineNegs (car func)) (car (last func)))))
     (t nil)))
 	  
 	 
@@ -132,21 +132,26 @@
 	(t nil)))
 
 (defun sigma? (elem)
+  (if (listp elem)
   (cond ((eq '- (cadr elem)) t)
 	((eq '+ (cadr elem)) t)
 	((eq '- (caddr elem)) t)
 	((eq '+ (caddr elem)) t)
-	(t nil)))
+	(t nil))
+  nil))
 
 (defun combineNegs (elem)
   (cond ((eq '- (car elem))
 	 (cons (cons '- (list (cadr elem))) 
 	       (combineNegs (cddr elem))))		
 	((eq '+ (car elem))
-	 (cons (cadr elem)
+	 (cons (list (cadr elem))
 	       (combineNegs (cddr elem))))
 	((null elem) '())
-	(t (cons (car elem) (combineNegs (cdr elem))))))
+	(t (cons (list (car elem)) (combineNegs (cdr elem))))))
+
+(defun insertDx (sigma dx)
+  (mapcar #'(lambda (x) (append x (list dx))) sigma))
 
 	
 
