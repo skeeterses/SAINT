@@ -99,6 +99,8 @@
      (list (car func) (integral (cdr func))))
     ((eq '- (car func))
      (list '- (integral (cdr func))))
+    ((and (sigma? (car func)) (dx? (car (last func))))
+     '())
     (t nil)))
 	  
 	 
@@ -128,4 +130,24 @@
 	   elem
 	   nil))
 	(t nil)))
+
+(defun sigma? (elem)
+  (cond ((eq '- (cadr elem)) t)
+	((eq '+ (cadr elem)) t)
+	((eq '- (caddr elem)) t)
+	((eq '+ (caddr elem)) t)
+	(t nil)))
+
+(defun combineNegs (elem)
+  (cond ((eq '- (car elem))
+	 (cons (cons '- (list (cadr elem))) 
+	       (combineNegs (cddr elem))))		
+	((eq '+ (car elem))
+	 (cons (cadr elem)
+	       (combineNegs (cddr elem))))
+	((null elem) '())
+	(t (cons (car elem) (combineNegs (cdr elem))))))
+
+	
+
 
