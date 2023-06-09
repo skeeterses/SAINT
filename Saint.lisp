@@ -13,7 +13,7 @@
 		 (list 'exp a))
 	 ((guard (list (list 'sin a) b)
 		 (and (variable? a) (dx? b)))
-	  (list '- 'cos a))
+	  (list '- (list 'cos a)))
 	 ((guard (list (list 'expt a b) c)
 		 (and (constant? a) (variable? b) (dx? c)))
 	  (list (list 'expt a b) '/ (list 'log b)))
@@ -58,7 +58,7 @@
 	  (list 'tan a))
 	 ((guard (list (list 'expt (list 'csc a) 2) b)
 		 (and (variable? a) (dx? b)))
-	  (list '- 'cot a))
+	  (list '- (list 'cot a)))
 	 ((guard (list b '/ a)
 		 (and (variable? a) (dx? b)))
 	  (list 'log a))
@@ -99,7 +99,7 @@
      (list (car func) (integral (cdr func))))
     ((eq '- (car func))
      (list '- (integral (cdr func))))
-    ((and (sigma? (car func)) (dx? (car (last func))))
+    ((and (sigma? (car func)) (dx? (car (last func))))                    
      (mapcar #'integral (insertDx (combineNegs (car func)) (car (last func)))))
     (t nil)))
 	  
@@ -153,6 +153,10 @@
 (defun insertDx (sigma dx)
   (mapcar #'(lambda (x) (append x (list dx))) sigma))
 
-	
+(defun insertPlus (func)
+  (if (= (length func) 1)
+    (list (car func))
+    (append (list (car func)) (list '+) (insertPlus (cdr func)))))
+
 
 
