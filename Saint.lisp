@@ -158,5 +158,27 @@
     (list (car func))
     (append (list (car func)) (list '+) (insertPlus (cdr func)))))
 
+(defun derive (func)
+  (match func
+	 ((guard (list a) (constant? a))
+	  0)
+	 ((guard (list a) (variable? a))
+	  1)))
 
-
+(defun simplify (expression)
+  (if (listp expression)
+    (cond ((and (eq '* (cadr expression))
+		(or (eq 0 (car expression)) (eq 0 (caddr expression))))
+	   0)
+	  ((and (eq '* (cadr expression)) (eq 1 (car expression)))
+	   (caddr expression))
+	  ((and (eq '* (cadr expression)) (eq 1 (caddr expression)))
+	   (car expression))
+	  ((and (eq '+ (cadr expression)) (eq 0 (car expression)))
+	   (caddr expression))
+	  ((and (eq '+ (cadr expression)) (eq 0 (caddr expression)))
+	   (car expression))
+	  ((and (eq '- (cadr expression)) (eq 0 (caddr expression)))
+	   (car expression))
+	  (t expression))
+    expression))
