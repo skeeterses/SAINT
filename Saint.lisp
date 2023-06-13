@@ -158,20 +158,32 @@
     (list (car func))
     (append (list (car func)) (list '+) (insertPlus (cdr func)))))
 
-(defun derive (func)
-  (match func
-	 ((guard (list (list a) b) (and (constant? a) (dx? b)))
-	  0)
-	 ((guard (list (list a) b) (and (variable? a) (dx? b) (char= a (char b 1))))
-	  1)
-	 ((guard (list a b c) (dx? c))
-	  (list a (derive (append (list b) (list c))) '+ (derive (append (list a) (list c))) b))
-	 ((guard (list (list 'exp a) b) (dx? b))
-	  (list (derive (list (list a) b)) '* (list 'exp a)))
-	 ((guard (list (list 'expt a b) c) 
-	  (and (dx? c) (char= a (char c 1)) (numberp b) (/= 0 b)))
-	  (list (derive (list (list a) c)) '* b (list 'expt a (- b 1))))
-	 ))
+(defun derive (func dx)
+  (if (dx? dx)
+    (if (expression? func)
+      (cond ((constant? func) 0)
+	    ((variable? func) 1)
+	    ((= (length func) 1)
+	     (derive (car func) dx))
+	    ((negativeExpression? func)
+	     (list '- (derive (cdr func) dx)))
+	    (t nil))
+      nil)
+    nil))
+
+(defun negativeExpression? (func)
+  (if (equal '- (car func))
+    t
+    nil))
+
+(defun expression? (func)
+  (or (constant? func) (variable? func) (expressionList? func)))
+
+(defun expressionList? (func)
+  (if (listp func)
+    1
+    nil))
+
 
 ; Get '( _ ("dx")) to '(_ "dx")
 (defun simplify (expression)
