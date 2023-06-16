@@ -99,11 +99,13 @@
      (list (car func) (integral (cdr func))))
     ((eq '- (car func))
      (list '- (integral (cdr func))))
-    ((and (sigma? (car func)) (dx? (car (last func))))                    
-     (mapcar #'integral (insertDx (combineNegs (car func)) (car (last func)))))
+    ((and (eq '+ (caar func)) (dx? (car (last func))))
+     (append (list '+) (mapcar #'integral (insertDx (cdar func) (car (last func))))))
     (t nil)))
 	  
-	 
+(defun insertDx (sigma dx)
+  (mapcar #'(lambda (x) (append (list x) (list dx))) sigma))
+
 (defun integral (func)
   (cond ((elf func) (elf func))
 	((algTran func) (algTran func))
@@ -131,38 +133,12 @@
 	   nil))
 	(t nil)))
 
-(defun sigma? (elem)
-  (if (listp elem)
-  (cond ((eq '- (cadr elem)) t)
-	((eq '+ (cadr elem)) t)
-	((eq '- (caddr elem)) t)
-	((eq '+ (caddr elem)) t)
-	(t nil))
-  nil))
-
-(defun combineNegs (elem)
-  (cond ((eq '- (car elem))
-	 (cons (cons '- (list (cadr elem))) 
-	       (combineNegs (cddr elem))))		
-	((eq '+ (car elem))
-	 (cons (list (cadr elem))
-	       (combineNegs (cddr elem))))
-	((null elem) '())
-	(t (cons (list (car elem)) (combineNegs (cdr elem))))))
-
-(defun insertDx (sigma dx)
-  (mapcar #'(lambda (x) (append x (list dx))) sigma))
-
-(defun insertPlus (func)
-  (if (= (length func) 1)
-    (list (car func))
-    (append (list (car func)) (list '+) (insertPlus (cdr func)))))
 
 (defun derive (func dx)
   (if (dx? dx)
     (if (expression? func)
       (cond ((constant? func) 0)
-	    ((variable? func) 1)
+	    ((variable? fun) 1)
 	    ((= (length func) 1)
 	     (derive (car func) dx))
 	    ((negativeExpression? func)
@@ -208,5 +184,3 @@
 	  (t expression))
     expression))
 
-(defun function? (expression)
-  nil)
