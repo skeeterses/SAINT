@@ -118,6 +118,11 @@
 	 (alpha-char-p (char elem 1)))
     nil))
 
+(defun duDx? (elem)
+  (match elem
+	 ((guard (list a '/ b) (and (dx? a) (dx? b)))
+	  t)))
+
 (defun constant? (elem)
   (cond ((numberp elem) elem)
 	((characterp elem)
@@ -136,28 +141,36 @@
 
 (defun derive (func dx)
   (if (dx? dx)
-    (if (expression? func)
       (cond ((constant? func) 0)
-	    ((variable? fun) 1)
+	    ((and (variable? func) (char= func (char dx 1)))
+	     1)
+	    ((variable? func)
+	     (list (coerce (list #\d func) 'string) '/ dx))
 	    ((= (length func) 1)
 	     (derive (car func) dx))
 	    ((negativeExpression? func)
 	     (list '- (derive (cdr func) dx)))
-	    (t nil))
-      nil)
-    nil))
+	    ((and (listp func) (constant? (car func)))
+	     (list (car func) (derive (cdr func) dx)))
+	    ((eq '+ (car func))
+	     (append (list '+) (mapcar #'(lambda (x) (derive x dx)) (cdr func))))
+	    (t 
+	      (scientificExpression func dx)))
+      nil))
+
+;(defun scientificExpression? (func)
+
+(defun scientificExpression (func dx)
+  (match func
+	 ((guard (list 'sin a) (variable? a))
+	  (list (list 'cos a) (derive a dx)))
+	 ((guard (list 'cos a) (variable? a))
+	  (list (list '- (list 'sin a)) (derive a dx)))))
+
 
 (defun negativeExpression? (func)
   (if (equal '- (car func))
     t
-    nil))
-
-(defun expression? (func)
-  (or (constant? func) (variable? func) (expressionList? func)))
-
-(defun expressionList? (func)
-  (if (listp func)
-    1
     nil))
 
 
